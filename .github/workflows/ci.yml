@@ -56,6 +56,18 @@ jobs:
           OVERRIDING SYSTEM VALUE
           VALUES (1, 'Test Patient');
 
+          SELECT setval(
+            pg_get_serial_sequence('doctors', 'id'),
+            (SELECT MAX(id) FROM doctors),
+            true
+          );
+
+          SELECT setval(
+            pg_get_serial_sequence('patients', 'id'),
+            (SELECT MAX(id) FROM patients),
+            true
+          );
+
           INSERT INTO doctor_working_hours
             (doctor_id, day_of_week, start_time, end_time)
           SELECT 1, day, start_time, end_time
