@@ -1,0 +1,74 @@
+﻿name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: clinic
+          POSTGRES_USER: clinic
+          POSTGRES_PASSWORD: clinic_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U clinic -d clinic"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://clinic:clinic_dev_password@localhost:5432/clinic?sslmode=disable
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Apply database migration
+        run: |
+          PGPASSWORD=clinic_dev_password psql \
+            -h localhost -U clinic -d clinic \
+            -f migrations/001_create_tables.sql
+
+      - name: Seed test database
+        run: |
+          PGPASSWORD=clinic_dev_password psql \
+            -h localhost -U clinic -d clinic <<'SQL'
+          INSERT INTO doctors (id, name, active)
+          OVERRIDING SYSTEM VALUE
+          VALUES (1, 'Test Doctor', TRUE);
+
+          INSERT INTO patients (id, name)
+          OVERRIDING SYSTEM VALUE
+          VALUES (1, 'Test Patient');
+
+          INSERT INTO doctor_working_hours
+            (doctor_id, day_of_week, start_time, end_time)
+          SELECT 1, day, start_time, end_time
+          FROM generate_series(1, 5) AS day
+          CROSS JOIN (
+            VALUES
+              (TIME '09:00', TIME '12:00'),
+              (TIME '13:00', TIME '17:00')
+          ) AS periods(start_time, end_time);
+          SQL
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build
+        run: go build ./...
