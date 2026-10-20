@@ -1,0 +1,21 @@
+﻿# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Go build outputs
+/bin/
+/build/
+*.exe
+*.test
+*.out
+coverage.txt
+
+# Logs
+*.log
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
