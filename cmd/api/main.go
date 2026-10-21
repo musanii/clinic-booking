@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -36,13 +37,18 @@ func main() {
 
 	api := httpapi.New(pool)
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	server := &http.Server{
-		Addr:              ":8080",
+		Addr:              ":" + port,
 		Handler:           api.Routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	log.Println("Clinic booking API listening on http://localhost:8080")
+	log.Printf("Clinic booking API listening on port %s", port)
 
 	if err := server.ListenAndServe(); err != nil &&
 		!errors.Is(err, http.ErrServerClosed) {
