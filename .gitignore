@@ -1,6 +1,4 @@
 ﻿# Environment variables and secrets
-.env
-.env.*
 !.env.example
 
 # Go build outputs
@@ -15,7 +13,8 @@ coverage.txt
 *.log
 
 # Editor and operating system files
-.vscode/
 .idea/
 .DS_Store
 Thumbs.db
+config.bat
+node_modules
