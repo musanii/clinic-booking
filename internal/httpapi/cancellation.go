@@ -36,11 +36,6 @@ func (api *API) cancelAppointment(w http.ResponseWriter, r *http.Request) {
 			"Request body must contain exactly one JSON object.")
 		return
 	}
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid_json",
-			"Provide a cancellation reason.")
-		return
-	}
 
 	ctx, cancel := timeLimit(r)
 	defer cancel()
